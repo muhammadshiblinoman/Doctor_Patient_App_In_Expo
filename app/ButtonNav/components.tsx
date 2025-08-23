@@ -28,6 +28,12 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     borderTopWidth: 1,
     borderColor: "#ddd",
+
+    // Fixed at bottom
+    position: "absolute",
+    bottom: 0,
+    width: "100%",
+    zIndex: 100,
   },
   navBtn: {
     flex: 1,
@@ -39,3 +45,4 @@ const styles = StyleSheet.create({
     color: "#007bff",
   },
 });
+
