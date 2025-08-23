@@ -53,7 +53,9 @@ export default function HomeScreen() {
 
               <TouchableOpacity
                 style={styles.moreBtn}
-                onPress={() => router.push({ pathname: "/Home/doctorDetails", params: { uid: item.uid } })}
+                onPress={() =>
+                  router.push({ pathname: "/Home/doctorDetails", params: { uid: item.uid } })
+                }
               >
                 <Text style={styles.moreText}>More</Text>
               </TouchableOpacity>
@@ -61,6 +63,21 @@ export default function HomeScreen() {
           )}
         />
       )}
+
+      {/* --- Bottom Nav Bar --- */}
+      <View style={styles.navBar}>
+        <TouchableOpacity style={styles.navBtn} onPress={() => router.push("/Home/(tabs)/home")}>
+          <Text style={styles.navText}>Home</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity style={styles.navBtn} onPress={() => router.push("/Hospital/hospitals")}>
+          <Text style={styles.navText}>Hospital</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity style={styles.navBtn} onPress={() => router.push("/Department/department")}>
+          <Text style={styles.navText}>Department</Text>
+        </TouchableOpacity>
+      </View>
     </View>
   );
 }
@@ -120,5 +137,24 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
+  },
+
+  // --- Bottom Navigation Styles ---
+  navBar: {
+    flexDirection: "row",
+    justifyContent: "space-around",
+    backgroundColor: "#fff",
+    paddingVertical: 12,
+    borderTopWidth: 1,
+    borderColor: "#ddd",
+  },
+  navBtn: {
+    flex: 1,
+    alignItems: "center",
+  },
+  navText: {
+    fontSize: 16,
+    fontWeight: "bold",
+    color: "#007bff",
   },
 });
