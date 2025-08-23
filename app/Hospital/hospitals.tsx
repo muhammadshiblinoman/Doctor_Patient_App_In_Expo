@@ -16,14 +16,12 @@ export default function HospitalScreen() {
         const data = snapshot.val();
         const hospitalSet = new Set<string>();
 
-        // প্রতিটি ডাক্তারের hospital field থেকে নাম যোগ করা হচ্ছে
         Object.values<any>(data).forEach((doc) => {
           if (doc.hospital && doc.hospital.trim() !== "") {
             hospitalSet.add(doc.hospital.trim());
           }
         });
 
-        // Set থেকে array বানিয়ে state update করা
         setHospitals(Array.from(hospitalSet).sort());
       } else {
         setHospitals([]);
@@ -65,6 +63,21 @@ export default function HospitalScreen() {
           )}
         />
       )}
+
+      {/* --- Bottom Navigation Bar --- */}
+      <View style={styles.navBar}>
+        <TouchableOpacity style={styles.navBtn} onPress={() => router.push("/Home/(tabs)/home")}>
+          <Text style={styles.navText}>Home</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity style={styles.navBtn} onPress={() => router.push("/Department/department")}>
+          <Text style={styles.navText}>Department</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity style={styles.navBtn} onPress={() => router.push("/Hospital/hospitals")}>
+          <Text style={styles.navText}>Hospital</Text>
+        </TouchableOpacity>
+      </View>
     </View>
   );
 }
@@ -82,4 +95,23 @@ const styles = StyleSheet.create({
   name: { fontSize: 18, fontWeight: "600", color: "#007bff" },
   noData: { textAlign: "center", marginTop: 40, fontSize: 16, color: "#666" },
   center: { flex: 1, justifyContent: "center", alignItems: "center" },
+
+  // --- Bottom Navigation Styles ---
+  navBar: {
+    flexDirection: "row",
+    justifyContent: "space-around",
+    backgroundColor: "#fff",
+    paddingVertical: 12,
+    borderTopWidth: 1,
+    borderColor: "#ddd",
+  },
+  navBtn: {
+    flex: 1,
+    alignItems: "center",
+  },
+  navText: {
+    fontSize: 16,
+    fontWeight: "bold",
+    color: "#007bff",
+  },
 });
