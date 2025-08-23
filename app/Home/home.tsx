@@ -1,195 +1,106 @@
-import { Ionicons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
-import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+// app/doctorDetails.tsx
+import { db } from "@/firebaseConfig";
+import { useLocalSearchParams } from "expo-router";
+import { get, ref } from "firebase/database";
+import { useEffect, useState } from "react";
+import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from "react-native";
 
-const departments = [
-  'Cardiology', 'Neurology', 'Orthopedics', 'ENT',
-  'Gynecology', 'Dermatology', 'Urology', 'Oncology',
-];
+// ✅ Import Gemini SDK
+import { GoogleGenerativeAI } from "@google/generative-ai";
 
-const dhakaHospitals = [
-  'Square Hospital', 'United Hospital', 'Apollo Hospital', 'BSMMU',
-];
+export default function DoctorDetails() {
+  const { uid } = useLocalSearchParams();
+  const [doctor, setDoctor] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [aiDescription, setAiDescription] = useState<string>("");
 
-const chittagongHospitals = [
-  'Chittagong Medical College', 'Chevron Lab', 'CSCR Hospital', 'Max Hospital',
-];
+  // ✅ Initialize Gemini
+  const genAI = new GoogleGenerativeAI(process.env.EXPO_PUBLIC_GEMINI_API_KEY || "");
 
-const dhakaSpecialists = [
-  'Cardiology Specialist', 'Cancer Specialist', 'ENT Specialist', 'Skin Specialist',
-];
+  useEffect(() => {
+    if (!uid) return;
+    const fetchDoctor = async () => {
+      try {
+        const snapshot = await get(ref(db, "doctors/" + uid));
+        if (snapshot.exists()) {
+          const docData = snapshot.val();
+          setDoctor(docData);
 
-const chittagongSpecialists = [
-  'Neurology Specialist', 'Eye Specialist', 'Child Specialist', 'Urology Specialist',
-];
+          // ✅ Call Gemini to generate department description
+          if (docData.department) {
+            generateDepartmentDescription(docData.department);
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching doctor details:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchDoctor();
+  }, [uid]);
 
-export default function Home() {
-  const router = useRouter();
+  // ✅ Function to generate department description
+  const generateDepartmentDescription = async (department: string) => {
+    try {
+      const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+      const prompt = `Give a short, simple description about the medical department: ${department}`;
+      const result = await model.generateContent(prompt);
+      setAiDescription(result.response.text());
+    } catch (error) {
+      console.error("Gemini error:", error);
+      setAiDescription("No AI description available.");
+    }
+  };
+
+  if (loading) {
+    return (
+      <View style={styles.center}>
+        <ActivityIndicator size="large" color="#007bff" />
+        <Text>Loading doctor details...</Text>
+      </View>
+    );
+  }
+
+  if (!doctor) {
+    return (
+      <View style={styles.center}>
+        <Text style={{ fontSize: 16, color: "#666" }}>Doctor not found</Text>
+      </View>
+    );
+  }
 
   return (
-    <View style={{ flex: 1 }}>
-      <ScrollView style={styles.container}>
-        {/* Search Cards */}
-        <View style={styles.cardContainer}>
-          <TouchableOpacity style={styles.searchCard} onPress={() => router.push('/Home/home')}>
-            <Ionicons name="people" size={24} color="#007AFF" />
-            <Text>Doctors</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.searchCard} onPress={() => router.push('/Home/home')}>
-            <Ionicons name="layers" size={24} color="#007AFF" />
-            <Text>Departments</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.searchCard} onPress={() => router.push('/Home/home')}>
-            <Ionicons name="business" size={24} color="#007AFF" />
-            <Text>Hospitals</Text>
-          </TouchableOpacity>
-        </View>
+    <ScrollView style={styles.container}>
+      <Text style={styles.title}>{doctor.name}</Text>
+      <Text style={styles.field}>📞 Phone: {doctor.phone}</Text>
+      <Text style={styles.field}>📧 Email: {doctor.email}</Text>
+      <Text style={styles.field}>🎓 Degree: {doctor.degree}</Text>
+      <Text style={styles.field}>🏥 Department: {doctor.department}</Text>
+      <Text style={styles.field}>🏩 Hospital: {doctor.hospital}</Text>
+      <Text style={styles.field}>📍 Chamber/Place: {doctor.place}</Text>
+      <Text style={styles.field}>⏰ Appointment Time: {doctor.appointmentTime}</Text>
+      <Text style={styles.field}>🆔 Registration No: {doctor.regNo || "N/A"}</Text>
+      <Text style={styles.field}>📅 Created At: {doctor.createdAt?.slice(0, 10)}</Text>
+      <Text style={styles.field}>👨‍⚕️ Status: {doctor.status}</Text>
 
-        {/* Departments */}
-        <Text style={styles.sectionTitle}>Departments</Text>
-        <View style={styles.grid}>
-          {departments.map((d, idx) => (
-            <TouchableOpacity key={idx} style={styles.gridItem} onPress={() => router.push(`//${d}`)}>
-              <Text>{d}</Text>
-            </TouchableOpacity>
-          ))}
-        </View>
-
-        {/* Hospitals by City (Side by Side) */}
-        <Text style={styles.sectionTitle}>Hospitals by City</Text>
-        <View style={styles.cityHospitalsContainer}>
-          <View style={styles.cityColumn}>
-            <Text style={styles.cityTitle}>Dhaka</Text>
-            {dhakaHospitals.map((name, idx) => (
-              <TouchableOpacity key={idx} style={styles.cityItem} onPress={() => router.push(`//${name}`)}>
-                <Text>{name}</Text>
-              </TouchableOpacity>
-            ))}
-          </View>
-
-          <View style={styles.cityColumn}>
-            <Text style={styles.cityTitle}>Chittagong</Text>
-            {chittagongHospitals.map((name, idx) => (
-              <TouchableOpacity key={idx} style={styles.cityItem} onPress={() => router.push(`//${name}`)}>
-                <Text>{name}</Text>
-              </TouchableOpacity>
-            ))}
-          </View>
-        </View>
-
-        {/* Specialist Doctors */}
-        <Text style={styles.sectionTitle}>Specialist Doctors in Dhaka</Text>
-        {dhakaSpecialists.map((s, idx) => (
-          <TouchableOpacity key={idx} style={styles.specialistCard}>
-            <Text>{s}</Text>
-          </TouchableOpacity>
-        ))}
-
-        <Text style={styles.sectionTitle}>Specialist Doctors in Chittagong</Text>
-        {chittagongSpecialists.map((s, idx) => (
-          <TouchableOpacity key={idx} style={styles.specialistCard}>
-            <Text>{s}</Text>
-          </TouchableOpacity>
-        ))}
-      </ScrollView>
-
-      {/* Bottom Navigation */}
-      <View style={styles.bottomNav}>
-        <TouchableOpacity onPress={() => router.push('/Home/home')}>
-          <Ionicons name="home" size={24} color="#007AFF" />
-          <Text style={styles.navLabel}>Home</Text>
-        </TouchableOpacity>
-        <TouchableOpacity onPress={() => router.push('/Home/home')}>
-          <Ionicons name="people" size={24} color="#007AFF" />
-          <Text style={styles.navLabel}>Doctors</Text>
-        </TouchableOpacity>
-        <TouchableOpacity onPress={() => router.push('/Home/home')}>
-          <Ionicons name="layers" size={24} color="#007AFF" />
-          <Text style={styles.navLabel}>Departments</Text>
-        </TouchableOpacity>
-        <TouchableOpacity onPress={() => router.push('/Home/home')}>
-          <Ionicons name="business" size={24} color="#007AFF" />
-          <Text style={styles.navLabel}>Hospitals</Text>
-        </TouchableOpacity>
+      {/* ✅ AI Department Description */}
+      <View style={styles.aiBox}>
+        <Text style={styles.aiTitle}>About {doctor.department}:</Text>
+        <Text style={styles.aiText}>
+          {aiDescription || "Generating description..."}
+        </Text>
       </View>
-    </View>
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    backgroundColor: '#fff',
-    padding: 16,
-  },
-  cardContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 20,
-  },
-  searchCard: {
-    backgroundColor: '#e6f0ff',
-    borderRadius: 10,
-    padding: 16,
-    alignItems: 'center',
-    flex: 1,
-    marginHorizontal: 4,
-  },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginVertical: 10,
-  },
-  grid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'space-between',
-    gap: 8,
-  },
-  gridItem: {
-    width: '48%',
-    backgroundColor: '#f2f2f2',
-    padding: 12,
-    borderRadius: 8,
-    marginBottom: 8,
-  },
-  cityHospitalsContainer: {
-    flexDirection: 'row',
-    gap: 16,
-    marginTop: 10,
-  },
-  cityColumn: {
-    flex: 1,
-    backgroundColor: '#f5f5f5',
-    borderRadius: 8,
-    padding: 10,
-  },
-  cityTitle: {
-    fontWeight: 'bold',
-    fontSize: 16,
-    marginBottom: 8,
-  },
-  cityItem: {
-    paddingVertical: 6,
-    borderBottomColor: '#ccc',
-    borderBottomWidth: 1,
-  },
-  specialistCard: {
-    backgroundColor: '#e6ffe6',
-    padding: 14,
-    borderRadius: 8,
-    marginBottom: 8,
-  },
-  bottomNav: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    paddingVertical: 12,
-    borderTopWidth: 1,
-    borderTopColor: '#ccc',
-    backgroundColor: '#f8f8f8',
-  },
-  navLabel: {
-    fontSize: 12,
-    color: '#007AFF',
-    textAlign: 'center',
-  },
+  container: { flex: 1, padding: 16, backgroundColor: "#fff" },
+  center: { flex: 1, justifyContent: "center", alignItems: "center" },
+  title: { fontSize: 24, fontWeight: "bold", marginBottom: 16, textAlign: "center", color: "#007bff" },
+  field: { fontSize: 16, marginBottom: 10, color: "#333" },
+  aiBox: { marginTop: 20, padding: 16, backgroundColor: "#f0f8ff", borderRadius: 10 },
+  aiTitle: { fontSize: 18, fontWeight: "bold", marginBottom: 8, color: "#007bff" },
+  aiText: { fontSize: 15, color: "#333" },
 });

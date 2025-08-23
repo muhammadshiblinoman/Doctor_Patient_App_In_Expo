@@ -2,7 +2,7 @@ import { auth, db } from "@/firebaseConfig";
 import { router } from "expo-router";
 import { createUserWithEmailAndPassword } from "firebase/auth";
 import { ref, set } from "firebase/database";
-import React, { useState } from "react";
+import { useState } from "react";
 import {
   Alert,
   Button,
@@ -16,7 +16,7 @@ import {
   TouchableWithoutFeedback,
 } from "react-native";
 
-export default function DoctorSignupScreen() {
+export default function SignupScreen() {
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
@@ -24,160 +24,175 @@ export default function DoctorSignupScreen() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [department, setDepartment] = useState("");
   const [hospital, setHospital] = useState("");
-  const [appointmentTimePlace, setAppointmentTimePlace] = useState("");
-  const [degreeOrQualification, setDegreeOrQualification] = useState("");
+  const [degree, setDegree] = useState("");
+  const [appointmentTime, setAppointmentTime] = useState("");
+  const [place, setPlace] = useState("");
+  const [loading, setLoading] = useState(false);
 
+  // ✅ Input validation
   const validateInputs = () => {
     if (!name.trim()) return "Name is required.";
     if (!phone.match(/^\d{11}$/)) return "Phone number must be 11 digits.";
-    if (!email.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) return "Invalid email format.";
+    if (!email.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/))
+      return "Invalid email format.";
     if (password.length < 6) return "Password must be at least 6 characters.";
     if (password !== confirmPassword) return "Passwords do not match.";
     if (!department.trim()) return "Department is required.";
     if (!hospital.trim()) return "Hospital is required.";
-    if (!appointmentTimePlace.trim()) return "Appointment time & place is required.";
-    if (!degreeOrQualification.trim()) return "Degree or Qualification is required.";
+    if (!degree.trim()) return "Degree is required.";
+    if (!appointmentTime.trim()) return "Appointment Time is required.";
+    if (!place.trim()) return "Place is required.";
     return null;
   };
 
+  // ✅ Signup function
   const handleSignup = async () => {
-    const error = validateInputs();
-    if (error) {
-      Alert.alert("Validation Error", error);
+    const errorMessage = validateInputs();
+    if (errorMessage) {
+      Alert.alert("Validation Error", errorMessage);
       return;
     }
 
     try {
-      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      setLoading(true);
+      const userCredential = await createUserWithEmailAndPassword(
+        auth,
+        email,
+        password
+      );
       const user = userCredential.user;
 
-      await set(ref(db, `doctors/${user.uid}`), {
+      // Store doctor info in Firebase Realtime DB
+      await set(ref(db, "doctors/" + user.uid), {
+        uid: user.uid,
         name,
         phone,
         email,
         department,
         hospital,
-        appointmentTimePlace,
-        degreeOrQualification,
+        degree,
+        appointmentTime,
+        place,
+        role: "doctor",
+        status: "active",
         createdAt: new Date().toISOString(),
       });
 
-      Alert.alert("Success", "Doctor account created!");
+      Alert.alert("Success", "Account created successfully!");
       router.replace("/screen/login");
-    } catch (error) {
-      Alert.alert("Signup Error");
+    } catch (error: any) {
+      Alert.alert("Error", error.message);
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+    <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
       <KeyboardAvoidingView
+        style={{ flex: 1 }}
         behavior={Platform.OS === "ios" ? "padding" : "height"}
         keyboardVerticalOffset={Platform.OS === "ios" ? 100 : 0}
-        style={styles.container}
       >
         <ScrollView
-          contentContainerStyle={styles.contentContainer}
+          contentContainerStyle={styles.container}
           keyboardShouldPersistTaps="handled"
         >
-          <Text style={styles.title}>Doctor Registration</Text>
+          <Text style={styles.title}>Doctor Signup</Text>
 
+          {/* Inputs */}
           <Text style={styles.label}>Name</Text>
           <TextInput
-            style={styles.input}
-            placeholder="Enter your full name"
-            placeholderTextColor="#888"
+            placeholder="Enter your name"
             value={name}
             onChangeText={setName}
-            autoCapitalize="words"
+            style={styles.input}
           />
 
-          <Text style={styles.label}>Phone Number</Text>
+          <Text style={styles.label}>Phone No</Text>
           <TextInput
-            style={styles.input}
             placeholder="Enter your phone number"
-            placeholderTextColor="#888"
             value={phone}
             onChangeText={setPhone}
+            style={styles.input}
             keyboardType="phone-pad"
             maxLength={11}
           />
 
           <Text style={styles.label}>Email</Text>
           <TextInput
-            style={styles.input}
             placeholder="Enter your email"
-            placeholderTextColor="#888"
             value={email}
             onChangeText={setEmail}
+            style={styles.input}
             keyboardType="email-address"
             autoCapitalize="none"
-            autoCorrect={false}
           />
 
           <Text style={styles.label}>Password</Text>
           <TextInput
-            style={styles.input}
             placeholder="Enter your password"
-            placeholderTextColor="#888"
             value={password}
             onChangeText={setPassword}
+            style={styles.input}
             secureTextEntry
-            autoCapitalize="none"
           />
 
           <Text style={styles.label}>Confirm Password</Text>
           <TextInput
-            style={styles.input}
             placeholder="Re-type your password"
-            placeholderTextColor="#888"
             value={confirmPassword}
             onChangeText={setConfirmPassword}
+            style={styles.input}
             secureTextEntry
-            autoCapitalize="none"
           />
 
           <Text style={styles.label}>Department</Text>
           <TextInput
-            style={styles.input}
-            placeholder="Enter your department"
-            placeholderTextColor="#888"
+            placeholder="Enter department"
             value={department}
             onChangeText={setDepartment}
-            autoCapitalize="words"
+            style={styles.input}
           />
 
           <Text style={styles.label}>Hospital</Text>
           <TextInput
-            style={styles.input}
             placeholder="Enter hospital name"
-            placeholderTextColor="#888"
             value={hospital}
             onChangeText={setHospital}
-            autoCapitalize="words"
-          />
-
-          <Text style={styles.label}>Appointment Time & Place</Text>
-          <TextInput
             style={styles.input}
-            placeholder="Enter appointment time & place"
-            placeholderTextColor="#888"
-            value={appointmentTimePlace}
-            onChangeText={setAppointmentTimePlace}
-            autoCapitalize="sentences"
           />
 
-          <Text style={styles.label}>Degree / Qualification</Text>
+          <Text style={styles.label}>Degree</Text>
           <TextInput
+            placeholder="Enter degree / qualification"
+            value={degree}
+            onChangeText={setDegree}
             style={styles.input}
-            placeholder="Enter your degree or qualification"
-            placeholderTextColor="#888"
-            value={degreeOrQualification}
-            onChangeText={setDegreeOrQualification}
-            autoCapitalize="words"
           />
 
-          <Button title="Register" onPress={handleSignup} />
+          <Text style={styles.label}>Appointment Time</Text>
+          <TextInput
+            placeholder="Enter appointment time"
+            value={appointmentTime}
+            onChangeText={setAppointmentTime}
+            style={styles.input}
+          />
+
+          <Text style={styles.label}>Place</Text>
+          <TextInput
+            placeholder="Enter chamber/place"
+            value={place}
+            onChangeText={setPlace}
+            style={styles.input}
+          />
+
+          {/* Signup button */}
+          <Button
+            title={loading ? "Signing up..." : "Signup"}
+            onPress={handleSignup}
+            disabled={loading}
+          />
 
           <Text
             style={styles.link}
@@ -192,33 +207,35 @@ export default function DoctorSignupScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#fff" },
-  contentContainer: { padding: 20, paddingBottom: 40 },
+  container: {
+    padding: 20,
+    paddingBottom: 40,
+    backgroundColor: "#fff",
+  },
   title: {
     fontSize: 26,
     fontWeight: "bold",
-    marginBottom: 24,
+    marginBottom: 20,
     textAlign: "center",
-    marginTop: 100,
+    marginTop: 60,
   },
   label: {
+    marginBottom: 4,
     fontSize: 14,
     fontWeight: "500",
     color: "#333",
-    marginBottom: 6,
   },
   input: {
     borderWidth: 1,
     borderColor: "#ccc",
+    padding: 10,
     borderRadius: 6,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
+    marginBottom: 16,
     fontSize: 16,
     color: "#000",
-    marginBottom: 16,
   },
   link: {
-    marginTop: 20,
+    marginTop: 16,
     color: "#007bff",
     textAlign: "center",
     textDecorationLine: "underline",
