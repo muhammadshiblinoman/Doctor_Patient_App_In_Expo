@@ -23,7 +23,7 @@ export default function LoginScreen() {
 
       // Optional: You can fetch user role (doctor/patient) from Firestore here
       Alert.alert('Login Successful');
-      router.push('/Doctor/edit'); // or '/Home/doctor-home' based on role
+      router.push('/Doctor/doctorHome'); // or '/Home/doctor-home' based on role
     } catch (error) {
       Alert.alert('Login Failed');
     }
