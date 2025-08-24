@@ -3,7 +3,16 @@ import { db } from "@/firebaseConfig";
 import { router } from "expo-router";
 import { onValue, ref } from "firebase/database";
 import { useEffect, useState } from "react";
-import { ActivityIndicator, FlatList, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import {
+  ActivityIndicator,
+  FlatList,
+  Image,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
+
 
 export default function HomeScreen() {
   const [doctors, setDoctors] = useState<any[]>([]);
@@ -34,6 +43,8 @@ export default function HomeScreen() {
     );
   }
 
+  const defaultLogo = "https://cdn-icons-png.flaticon.com/512/1077/1077114.png"; // default doctor icon
+
   return (
     <View style={styles.container}>
       <Text style={styles.header}>Available Doctors</Text>
@@ -46,15 +57,26 @@ export default function HomeScreen() {
           keyExtractor={(item: any, index) => item.uid || index.toString()}
           renderItem={({ item }) => (
             <View style={styles.card}>
-              <Text style={styles.name}>{item.name}</Text>
-              <Text style={styles.text}>Degree: {item.degree}</Text>
-              <Text style={styles.text}>Department: {item.department}</Text>
-              <Text style={styles.text}>Hospital: {item.hospital}</Text>
+              {/* Profile Logo */}
+              <Image
+                source={{ uri: item.photoURL || defaultLogo }}
+                style={styles.logo}
+              />
+
+              <View style={styles.info}>
+                <Text style={styles.name}>{item.name}</Text>
+                <Text style={styles.text}>🎓 {item.degree}</Text>
+                <Text style={styles.text}>🏥 {item.department}</Text>
+                <Text style={styles.text}>🏩 {item.hospital}</Text>
+              </View>
 
               <TouchableOpacity
                 style={styles.moreBtn}
                 onPress={() =>
-                  router.push({ pathname: "/Home/doctorDetails", params: { uid: item.uid } })
+                  router.push({
+                    pathname: "/Home/doctorDetails",
+                    params: { uid: item.uid },
+                  })
                 }
               >
                 <Text style={styles.moreText}>More</Text>
@@ -83,18 +105,8 @@ export default function HomeScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#f9f9f9",
-    padding: 16,
-  },
-  header: {
-    fontSize: 22,
-    fontWeight: "bold",
-    marginBottom: 16,
-    textAlign: "center",
-    color: "#333",
-  },
+  container: { flex: 1, backgroundColor: "#f9f9f9", padding: 16 },
+  header: { fontSize: 22, fontWeight: "bold", marginBottom: 16, textAlign: "center", color: "#333" },
   card: {
     backgroundColor: "#fff",
     padding: 16,
@@ -105,41 +117,23 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
     shadowRadius: 6,
     elevation: 3,
+    alignItems: "center", // centered for vertical layout
   },
-  name: {
-    fontSize: 18,
-    fontWeight: "bold",
-    marginBottom: 6,
-  },
-  text: {
-    fontSize: 14,
-    color: "#555",
-    marginBottom: 3,
-  },
+  logo: { width: 80, height: 80, borderRadius: 40, marginBottom: 12 },
+  info: { alignItems: "center" }, // text centered below logo
+  name: { fontSize: 16, fontWeight: "bold", marginBottom: 4 },
+  text: { fontSize: 14, color: "#555", marginBottom: 2 },
   moreBtn: {
     marginTop: 8,
     backgroundColor: "#007bff",
-    paddingVertical: 8,
+    paddingVertical: 6,
+    paddingHorizontal: 12,
     borderRadius: 8,
   },
-  moreText: {
-    color: "#fff",
-    textAlign: "center",
-    fontWeight: "bold",
-  },
-  noData: {
-    textAlign: "center",
-    marginTop: 40,
-    fontSize: 16,
-    color: "#666",
-  },
-  center: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-  },
+  moreText: { color: "#fff", fontWeight: "bold", textAlign: "center" },
+  noData: { textAlign: "center", marginTop: 40, fontSize: 16, color: "#666" },
+  center: { flex: 1, justifyContent: "center", alignItems: "center" },
 
-  // --- Bottom Navigation Styles ---
   navBar: {
     flexDirection: "row",
     justifyContent: "space-around",
@@ -148,13 +142,6 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     borderColor: "#ddd",
   },
-  navBtn: {
-    flex: 1,
-    alignItems: "center",
-  },
-  navText: {
-    fontSize: 16,
-    fontWeight: "bold",
-    color: "#007bff",
-  },
+  navBtn: { flex: 1, alignItems: "center" },
+  navText: { fontSize: 16, fontWeight: "bold", color: "#007bff" },
 });
