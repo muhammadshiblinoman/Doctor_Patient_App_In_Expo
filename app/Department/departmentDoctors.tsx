@@ -15,9 +15,13 @@ export default function DepartmentDoctors() {
     const unsubscribe = onValue(doctorsRef, (snapshot) => {
       if (snapshot.exists()) {
         const data = snapshot.val();
+
+        // Trim & lowercase comparison to avoid mismatch
         const filteredDoctors = Object.values<any>(data).filter(
-          (doc) => doc.department === department
+          (doc) =>
+            String(doc.department ?? "").trim().toLowerCase() === String(department ?? "").trim().toLowerCase()
         );
+
         setDoctors(filteredDoctors);
       } else {
         setDoctors([]);

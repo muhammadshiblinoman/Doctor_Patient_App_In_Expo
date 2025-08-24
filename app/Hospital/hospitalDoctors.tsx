@@ -15,9 +15,13 @@ export default function HospitalDoctors() {
     const unsubscribe = onValue(doctorsRef, (snapshot) => {
       if (snapshot.exists()) {
         const data = snapshot.val();
+
+        // Trim & lowercase to avoid mismatch
         const filtered = Object.values<any>(data).filter(
-          (doc) => doc.hospital === hospital
+          (doc) =>
+            String(doc.hospital ?? "").trim().toLowerCase() === String(hospital ?? "").trim().toLowerCase()
         );
+
         setDoctors(filtered);
       } else {
         setDoctors([]);
@@ -52,6 +56,7 @@ export default function HospitalDoctors() {
               <Text style={styles.name}>{item.name}</Text>
               <Text style={styles.text}>Degree: {item.degree}</Text>
               <Text style={styles.text}>Department: {item.department}</Text>
+              <Text style={styles.text}>Hospital: {item.hospital}</Text>
 
               <TouchableOpacity
                 style={styles.moreBtn}
