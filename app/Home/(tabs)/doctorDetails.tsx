@@ -10,6 +10,19 @@ export default function DoctorDetails() {
   const [doctor, setDoctor] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
+  // DOB থেকে Age calculate করার ফাংশন
+  const calculateAge = (dob: string) => {
+    if (!dob) return "-";
+    const birthDate = new Date(dob);
+    const today = new Date();
+    let age = today.getFullYear() - birthDate.getFullYear();
+    const monthDiff = today.getMonth() - birthDate.getMonth();
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+      age--;
+    }
+    return age;
+  };
+
   useEffect(() => {
     if (!uid) return;
     const fetchDoctor = async () => {
@@ -31,7 +44,7 @@ export default function DoctorDetails() {
     return (
       <View style={styles.center}>
         <ActivityIndicator size="large" color="#007bff" />
-        <Text>Loading doctor details...</Text>
+        <Text style={styles.loadingText}>Loading doctor details...</Text>
       </View>
     );
   }
@@ -39,22 +52,33 @@ export default function DoctorDetails() {
   if (!doctor) {
     return (
       <View style={styles.center}>
-        <Text style={{ fontSize: 16, color: "#666" }}>Doctor not found</Text>
+        <Text style={styles.notFoundText}>Doctor not found</Text>
       </View>
     );
   }
 
+  const infoFields = [
+    { label: "Phone", value: doctor.phone, emoji: "📞" },
+    { label: "Email", value: doctor.email, emoji: "📧" },
+    { label: "Degree", value: doctor.degree, emoji: "🎓" },
+    { label: "Department", value: doctor.department, emoji: "🏥" },
+    { label: "Hospital", value: doctor.hospital, emoji: "🏩" },
+    { label: "Chamber/Place", value: doctor.place, emoji: "📍" },
+    { label: "Appointment Time", value: doctor.appointmentTime, emoji: "⏰" },
+    { label: "Status", value: doctor.status, emoji: "👨‍⚕️" },
+    { label: "Age", value: calculateAge(doctor.dob), emoji: "🎂" }, // Age added
+  ];
+
   return (
     <ScrollView style={styles.container}>
       <Text style={styles.title}>{doctor.name}</Text>
-      <Text style={styles.field}>📞 Phone: {doctor.phone}</Text>
-      <Text style={styles.field}>📧 Email: {doctor.email}</Text>
-      <Text style={styles.field}>🎓 Degree: {doctor.degree}</Text>
-      <Text style={styles.field}>🏥 Department: {doctor.department}</Text>
-      <Text style={styles.field}>🏩 Hospital: {doctor.hospital}</Text>
-      <Text style={styles.field}>📍 Chamber/Place: {doctor.place}</Text>
-      <Text style={styles.field}>⏰ Appointment Time: {doctor.appointmentTime}</Text>
-      <Text style={styles.field}>👨‍⚕️ Status: {doctor.status}</Text>
+
+      {infoFields.map((field, index) => (
+        <View key={index} style={styles.card}>
+          <Text style={styles.cardLabel}>{field.emoji} {field.label}</Text>
+          <Text style={styles.cardValue}>{field.value}</Text>
+        </View>
+      ))}
     </ScrollView>
   );
 }
@@ -63,23 +87,49 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 16,
-    backgroundColor: "#fff",
+    backgroundColor: "#f0f0f0",
   },
   center: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
+    backgroundColor: "#f0f0f0",
+  },
+  loadingText: {
+    marginTop: 8,
+    color: "#007bff",
+    fontSize: 16,
+  },
+  notFoundText: {
+    color: "#666",
+    fontSize: 16,
   },
   title: {
-    fontSize: 24,
+    fontSize: 26,
     fontWeight: "bold",
-    marginBottom: 16,
-    textAlign: "center",
     color: "#007bff",
+    textAlign: "center",
+    marginBottom: 20,
   },
-  field: {
+  card: {
+    backgroundColor: "#fff",
+    padding: 16,
+    borderRadius: 12,
+    marginBottom: 12,
+    elevation: 3,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.2,
+    shadowRadius: 1.41,
+  },
+  cardLabel: {
+    fontSize: 14,
+    color: "#555",
+    marginBottom: 4,
+  },
+  cardValue: {
     fontSize: 16,
-    marginBottom: 10,
-    color: "#333",
+    fontWeight: "600",
+    color: "#000",
   },
 });

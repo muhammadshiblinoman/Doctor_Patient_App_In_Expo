@@ -27,7 +27,21 @@ export default function SignupScreen() {
   const [degree, setDegree] = useState("");
   const [appointmentTime, setAppointmentTime] = useState("");
   const [place, setPlace] = useState("");
+  const [registrationNumber, setRegistrationNumber] = useState("");
+  const [dob, setDob] = useState(""); // YYYY-MM-DD format
   const [loading, setLoading] = useState(false);
+
+  // ✅ calculate age from DOB
+  const calculateAge = (dob: string) => {
+    const birthDate = new Date(dob);
+    const today = new Date();
+    let age = today.getFullYear() - birthDate.getFullYear();
+    const monthDiff = today.getMonth() - birthDate.getMonth();
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+      age--;
+    }
+    return age;
+  };
 
   // ✅ Input validation
   const validateInputs = () => {
@@ -42,6 +56,8 @@ export default function SignupScreen() {
     if (!degree.trim()) return "Degree is required.";
     if (!appointmentTime.trim()) return "Appointment Time is required.";
     if (!place.trim()) return "Place is required.";
+    if (!registrationNumber.trim()) return "Registration Number is required.";
+    if (!dob.trim()) return "Date of Birth is required.";
     return null;
   };
 
@@ -62,6 +78,9 @@ export default function SignupScreen() {
       );
       const user = userCredential.user;
 
+      // calculate age from dob
+      const age = calculateAge(dob);
+
       // Store doctor info in Firebase Realtime DB
       await set(ref(db, "doctors/" + user.uid), {
         uid: user.uid,
@@ -73,6 +92,9 @@ export default function SignupScreen() {
         degree,
         appointmentTime,
         place,
+        registrationNumber,
+        dob,
+        age,
         role: "doctor",
         status: "active",
         createdAt: new Date().toISOString(),
@@ -184,6 +206,22 @@ export default function SignupScreen() {
             placeholder="Enter chamber/place"
             value={place}
             onChangeText={setPlace}
+            style={styles.input}
+          />
+
+          <Text style={styles.label}>Registration Number</Text>
+          <TextInput
+            placeholder="Enter BMDC Registration Number"
+            value={registrationNumber}
+            onChangeText={setRegistrationNumber}
+            style={styles.input}
+          />
+
+          <Text style={styles.label}>Date of Birth</Text>
+          <TextInput
+            placeholder="YYYY-MM-DD"
+            value={dob}
+            onChangeText={setDob}
             style={styles.input}
           />
 
