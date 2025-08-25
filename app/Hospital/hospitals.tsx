@@ -63,21 +63,6 @@ export default function HospitalScreen() {
           )}
         />
       )}
-
-      {/* --- Bottom Navigation Bar --- */}
-      <View style={styles.navBar}>
-        <TouchableOpacity style={styles.navBtn} onPress={() => router.push("/Home/(tabs)/home")}>
-          <Text style={styles.navText}>Home</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity style={styles.navBtn} onPress={() => router.push("/Department/department")}>
-          <Text style={styles.navText}>Department</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity style={styles.navBtn} onPress={() => router.push("/Hospital/hospitals")}>
-          <Text style={styles.navText}>Hospital</Text>
-        </TouchableOpacity>
-      </View>
     </View>
   );
 }
