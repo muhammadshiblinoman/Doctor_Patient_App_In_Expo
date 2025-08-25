@@ -95,8 +95,9 @@ export default function DoctorEdit() {
   const handleUpdate = async () => {
     if (!uid) return;
     try {
-      // Only editable fields
+      // Editable fields: including name now
       const editableFields = [
+        "name",
         "phone",
         "email",
         "hospital",
@@ -151,7 +152,6 @@ export default function DoctorEdit() {
   };
 
   const readOnlyFields = [
-    "name",
     "department",
     "registrationNumber",
     "dob",
@@ -161,7 +161,7 @@ export default function DoctorEdit() {
   ];
 
   return (
-    <ScrollView style={styles.container}>
+    <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 140 }}>
       <Text style={styles.header}>Edit Doctor Profile</Text>
 
       {Object.keys(form).map((key) => (
