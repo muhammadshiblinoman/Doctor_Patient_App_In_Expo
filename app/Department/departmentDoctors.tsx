@@ -5,12 +5,12 @@ import { onValue, ref } from "firebase/database";
 import { useEffect, useState } from "react";
 import {
   ActivityIndicator,
-  Dimensions,
   FlatList,
   Image,
   StyleSheet,
   Text,
   TouchableOpacity,
+  useWindowDimensions,
   View,
 } from "react-native";
 import Icon from "react-native-vector-icons/Ionicons";
@@ -20,14 +20,14 @@ export default function DepartmentDoctors() {
   const [doctors, setDoctors] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Get screen width
-  const screenWidth = Dimensions.get("window").width;
+  // Get screen width dynamically
+  const { width } = useWindowDimensions();
 
   // responsive columns logic
   let numColumns = 1;
-  if (screenWidth >= 1200) {
+  if (width >= 1200) {
     numColumns = 4; // Laptop / Desktop
-  } else if (screenWidth >= 768) {
+  } else if (width >= 768) {
     numColumns = 3; // Tablet
   } else {
     numColumns = 1; // Mobile
@@ -87,8 +87,8 @@ export default function DepartmentDoctors() {
                 </View>
               )}
               <Text style={styles.name}>{item.name}</Text>
-              <Text style={styles.text}>Degree: {item.degree}</Text>
-              <Text style={styles.text}>Hospital: {item.hospital}</Text>
+              <Text style={styles.text}>{item.degree}</Text>
+              <Text style={styles.text}>{item.hospital}</Text>
 
               <TouchableOpacity
                 style={styles.moreBtn}

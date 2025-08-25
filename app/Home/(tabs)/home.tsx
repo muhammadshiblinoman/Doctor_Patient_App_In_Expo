@@ -11,12 +11,20 @@ import {
   Text,
   TouchableOpacity,
   View,
+  useWindowDimensions,
 } from "react-native";
-
 
 export default function HomeScreen() {
   const [doctors, setDoctors] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+
+  const { width } = useWindowDimensions();
+
+  // Responsive columns
+  let numColumns = 1;
+  if (width >= 1200) numColumns = 4; // laptop/desktop
+  else if (width >= 768) numColumns = 3; // tablet
+  else numColumns = 1; // mobile
 
   useEffect(() => {
     const doctorsRef = ref(db, "doctors");
@@ -25,23 +33,20 @@ export default function HomeScreen() {
         const data = snapshot.val();
         const doctorList = Object.values(data);
         setDoctors(doctorList);
-      } else {
-        setDoctors([]);
-      }
+      } else setDoctors([]);
       setLoading(false);
     });
 
     return () => unsubscribe();
   }, []);
 
-  if (loading) {
+  if (loading)
     return (
       <View style={styles.center}>
         <ActivityIndicator size="large" color="#007bff" />
         <Text>Loading doctors...</Text>
       </View>
     );
-  }
 
   const defaultLogo = "https://cdn-icons-png.flaticon.com/512/1077/1077114.png"; // default doctor icon
 
@@ -54,22 +59,19 @@ export default function HomeScreen() {
       ) : (
         <FlatList
           data={doctors}
+          numColumns={numColumns}
+          key={numColumns} // force re-render on column change
+          columnWrapperStyle={numColumns > 1 ? { justifyContent: "space-between" } : undefined}
           keyExtractor={(item: any, index) => item.uid || index.toString()}
           renderItem={({ item }) => (
-            <View style={styles.card}>
-              {/* Profile Logo */}
-              <Image
-                source={{ uri: item.photoURL || defaultLogo }}
-                style={styles.logo}
-              />
-
+            <View style={[styles.card, { width: `${100 / numColumns - 2}%` }]}>
+              <Image source={{ uri: item.photoURL || defaultLogo }} style={styles.logo} />
               <View style={styles.info}>
                 <Text style={styles.name}>{item.name}</Text>
                 <Text style={styles.text}>🎓 {item.degree}</Text>
                 <Text style={styles.text}>🏥 {item.department}</Text>
                 <Text style={styles.text}>🏩 {item.hospital}</Text>
               </View>
-
               <TouchableOpacity
                 style={styles.moreBtn}
                 onPress={() =>
@@ -91,11 +93,9 @@ export default function HomeScreen() {
         <TouchableOpacity style={styles.navBtn} onPress={() => router.push("/Home/(tabs)/home")}>
           <Text style={styles.navText}>Home</Text>
         </TouchableOpacity>
-
         <TouchableOpacity style={styles.navBtn} onPress={() => router.push("/Hospital/hospitals")}>
           <Text style={styles.navText}>Hospital</Text>
         </TouchableOpacity>
-
         <TouchableOpacity style={styles.navBtn} onPress={() => router.push("/Department/department")}>
           <Text style={styles.navText}>Department</Text>
         </TouchableOpacity>
@@ -111,16 +111,16 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
     padding: 16,
     borderRadius: 12,
-    marginBottom: 12,
+    marginBottom: 16,
+    alignItems: "center",
     shadowColor: "#000",
     shadowOpacity: 0.1,
     shadowOffset: { width: 0, height: 2 },
     shadowRadius: 6,
     elevation: 3,
-    alignItems: "center", // centered for vertical layout
   },
   logo: { width: 80, height: 80, borderRadius: 40, marginBottom: 12 },
-  info: { alignItems: "center" }, // text centered below logo
+  info: { alignItems: "center" },
   name: { fontSize: 16, fontWeight: "bold", marginBottom: 4 },
   text: { fontSize: 14, color: "#555", marginBottom: 2 },
   moreBtn: {
@@ -133,7 +133,6 @@ const styles = StyleSheet.create({
   moreText: { color: "#fff", fontWeight: "bold", textAlign: "center" },
   noData: { textAlign: "center", marginTop: 40, fontSize: 16, color: "#666" },
   center: { flex: 1, justifyContent: "center", alignItems: "center" },
-
   navBar: {
     flexDirection: "row",
     justifyContent: "space-around",
