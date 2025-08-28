@@ -2,11 +2,21 @@ import { db } from "@/firebaseConfig";
 import { router } from "expo-router";
 import { onValue, ref } from "firebase/database";
 import { useEffect, useState } from "react";
-import { ActivityIndicator, FlatList, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import {
+  ActivityIndicator,
+  FlatList,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import BottomNav from "../ButtonNav/components";
 
 export default function DepartmentScreen() {
   const [departments, setDepartments] = useState<string[]>([]);
+  const [filteredDepartments, setFilteredDepartments] = useState<string[]>([]);
+  const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -20,14 +30,30 @@ export default function DepartmentScreen() {
             departmentSet.add(doc.department.trim());
           }
         });
-        setDepartments(Array.from(departmentSet).sort());
+        const deptArray = Array.from(departmentSet).sort();
+        setDepartments(deptArray);
+        setFilteredDepartments(deptArray);
       } else {
         setDepartments([]);
+        setFilteredDepartments([]);
       }
       setLoading(false);
     });
     return () => unsubscribe();
   }, []);
+
+  // filter departments based on search text
+  const handleSearch = (text: string) => {
+    setSearch(text);
+    if (text.trim() === "") {
+      setFilteredDepartments(departments);
+    } else {
+      const filtered = departments.filter((dept) =>
+        dept.toLowerCase().includes(text.toLowerCase())
+      );
+      setFilteredDepartments(filtered);
+    }
+  };
 
   if (loading) {
     return (
@@ -41,16 +67,30 @@ export default function DepartmentScreen() {
   return (
     <View style={styles.container}>
       <Text style={styles.header}>Departments</Text>
-      {departments.length === 0 ? (
+
+      {/* --- Search Bar --- */}
+      <TextInput
+        style={styles.searchInput}
+        placeholder="Search department..."
+        value={search}
+        onChangeText={handleSearch}
+      />
+
+      {filteredDepartments.length === 0 ? (
         <Text style={styles.noData}>No departments found</Text>
       ) : (
         <FlatList
-          data={departments}
+          data={filteredDepartments}
           keyExtractor={(item, index) => index.toString()}
           renderItem={({ item }) => (
             <TouchableOpacity
               style={styles.card}
-              onPress={() => router.push({ pathname: "/Department/departmentDoctors", params: { department: item } })}
+              onPress={() =>
+                router.push({
+                  pathname: "/Department/departmentDoctors",
+                  params: { department: item },
+                })
+              }
             >
               <Text style={styles.name}>{item}</Text>
             </TouchableOpacity>
@@ -66,9 +106,34 @@ export default function DepartmentScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#f9f9f9", padding: 16 },
-  header: { fontSize: 22, fontWeight: "bold", marginBottom: 16, textAlign: "center", color: "#333" },
-  card: { backgroundColor: "#fff", padding: 16, borderRadius: 12, marginBottom: 12, elevation: 2 },
+  header: {
+    fontSize: 22,
+    fontWeight: "bold",
+    marginBottom: 12,
+    textAlign: "center",
+    color: "#333",
+  },
+  searchInput: {
+    backgroundColor: "#fff",
+    padding: 10,
+    borderRadius: 8,
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: "#ddd",
+  },
+  card: {
+    backgroundColor: "#fff",
+    padding: 16,
+    borderRadius: 12,
+    marginBottom: 12,
+    elevation: 2,
+  },
   name: { fontSize: 18, fontWeight: "600", color: "#007bff" },
-  noData: { textAlign: "center", marginTop: 40, fontSize: 16, color: "#666" },
+  noData: {
+    textAlign: "center",
+    marginTop: 40,
+    fontSize: 16,
+    color: "#666",
+  },
   center: { flex: 1, justifyContent: "center", alignItems: "center" },
 });

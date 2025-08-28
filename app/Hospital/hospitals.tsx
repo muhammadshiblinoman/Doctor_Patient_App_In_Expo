@@ -3,11 +3,21 @@ import { db } from "@/firebaseConfig";
 import { router } from "expo-router";
 import { onValue, ref } from "firebase/database";
 import { useEffect, useState } from "react";
-import { ActivityIndicator, FlatList, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import {
+  ActivityIndicator,
+  FlatList,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from "react-native";
 
 export default function HospitalScreen() {
   const [hospitals, setHospitals] = useState<string[]>([]);
+  const [filteredHospitals, setFilteredHospitals] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState("");
 
   useEffect(() => {
     const doctorsRef = ref(db, "doctors");
@@ -22,15 +32,29 @@ export default function HospitalScreen() {
           }
         });
 
-        setHospitals(Array.from(hospitalSet).sort());
+        const sortedHospitals = Array.from(hospitalSet).sort();
+        setHospitals(sortedHospitals);
+        setFilteredHospitals(sortedHospitals);
       } else {
         setHospitals([]);
+        setFilteredHospitals([]);
       }
       setLoading(false);
     });
 
     return () => unsubscribe();
   }, []);
+
+  // Search filter
+  useEffect(() => {
+    if (search.trim() === "") {
+      setFilteredHospitals(hospitals);
+    } else {
+      setFilteredHospitals(
+        hospitals.filter((h) => h.toLowerCase().includes(search.toLowerCase()))
+      );
+    }
+  }, [search, hospitals]);
 
   if (loading) {
     return (
@@ -43,13 +67,23 @@ export default function HospitalScreen() {
 
   return (
     <View style={styles.container}>
+      {/* --- Search Bar --- */}
+      <View style={styles.searchBar}>
+        <TextInput
+          style={styles.searchInput}
+          placeholder="Search hospitals..."
+          value={search}
+          onChangeText={setSearch}
+        />
+      </View>
+
       <Text style={styles.header}>Hospitals</Text>
 
-      {hospitals.length === 0 ? (
+      {filteredHospitals.length === 0 ? (
         <Text style={styles.noData}>No hospitals found</Text>
       ) : (
         <FlatList
-          data={hospitals}
+          data={filteredHospitals}
           keyExtractor={(item, index) => index.toString()}
           renderItem={({ item }) => (
             <TouchableOpacity
@@ -63,12 +97,27 @@ export default function HospitalScreen() {
           )}
         />
       )}
+
+      {/* --- Bottom Navigation --- */}
+      <View style={styles.navBar}>
+        <TouchableOpacity style={styles.navBtn} onPress={() => router.push("/Home/(tabs)/home")}>
+          <Text style={styles.navText}>Home</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity style={styles.navBtn} onPress={() => router.push("/Department/department")}>
+          <Text style={styles.navText}>Department</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity style={styles.navBtn} onPress={() => router.push("/Hospital/hospitals")}>
+          <Text style={styles.navText}>Hospital</Text>
+        </TouchableOpacity>
+      </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#f9f9f9", padding: 16 },
+  container: { flex: 1, backgroundColor: "#f9f9f9", padding: 16, paddingTop: 70 },
   header: { fontSize: 22, fontWeight: "bold", marginBottom: 16, textAlign: "center", color: "#333" },
   card: {
     backgroundColor: "#fff",
@@ -81,6 +130,26 @@ const styles = StyleSheet.create({
   noData: { textAlign: "center", marginTop: 40, fontSize: 16, color: "#666" },
   center: { flex: 1, justifyContent: "center", alignItems: "center" },
 
+  // --- Search bar ---
+  searchBar: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    backgroundColor: "#fff",
+    padding: 10,
+    borderBottomWidth: 1,
+    borderColor: "#ddd",
+    zIndex: 100,
+  },
+  searchInput: {
+    backgroundColor: "#f1f1f1",
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    fontSize: 16,
+  },
+
   // --- Bottom Navigation Styles ---
   navBar: {
     flexDirection: "row",
@@ -89,6 +158,9 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     borderTopWidth: 1,
     borderColor: "#ddd",
+    position: "absolute",
+    bottom: 0,
+    width: "100%",
   },
   navBtn: {
     flex: 1,

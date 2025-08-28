@@ -9,6 +9,7 @@ import {
   Image,
   StyleSheet,
   Text,
+  TextInput,
   TouchableOpacity,
   View,
   useWindowDimensions,
@@ -17,6 +18,8 @@ import {
 export default function HomeScreen() {
   const [doctors, setDoctors] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState("");
+  const [filteredDoctors, setFilteredDoctors] = useState<any[]>([]);
 
   const { width } = useWindowDimensions();
 
@@ -33,12 +36,32 @@ export default function HomeScreen() {
         const data = snapshot.val();
         const doctorList = Object.values(data);
         setDoctors(doctorList);
-      } else setDoctors([]);
+        setFilteredDoctors(doctorList); // default show all
+      } else {
+        setDoctors([]);
+        setFilteredDoctors([]);
+      }
       setLoading(false);
     });
 
     return () => unsubscribe();
   }, []);
+
+  // search filter
+  useEffect(() => {
+    if (search.trim() === "") {
+      setFilteredDoctors(doctors);
+    } else {
+      const q = search.toLowerCase();
+      const result = doctors.filter(
+        (item: any) =>
+          item.name?.toLowerCase().includes(q) ||
+          item.hospital?.toLowerCase().includes(q) ||
+          item.department?.toLowerCase().includes(q)
+      );
+      setFilteredDoctors(result);
+    }
+  }, [search, doctors]);
 
   if (loading)
     return (
@@ -54,11 +77,19 @@ export default function HomeScreen() {
     <View style={styles.container}>
       <Text style={styles.header}>Available Doctors</Text>
 
-      {doctors.length === 0 ? (
+      {/* 🔍 Search Bar */}
+      <TextInput
+        style={styles.searchBar}
+        placeholder="Search by name, hospital or department"
+        value={search}
+        onChangeText={setSearch}
+      />
+
+      {filteredDoctors.length === 0 ? (
         <Text style={styles.noData}>No doctors found</Text>
       ) : (
         <FlatList
-          data={doctors}
+          data={filteredDoctors}
           numColumns={numColumns}
           key={numColumns} // force re-render on column change
           columnWrapperStyle={numColumns > 1 ? { justifyContent: "space-between" } : undefined}
@@ -93,7 +124,22 @@ export default function HomeScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#f9f9f9", padding: 16 },
-  header: { fontSize: 22, fontWeight: "bold", marginBottom: 16, textAlign: "center", color: "#333" },
+  header: {
+    fontSize: 22,
+    fontWeight: "bold",
+    marginBottom: 16,
+    textAlign: "center",
+    color: "#333",
+  },
+  searchBar: {
+    backgroundColor: "#fff",
+    borderRadius: 10,
+    padding: 10,
+    fontSize: 16,
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: "#ddd",
+  },
   card: {
     backgroundColor: "#fff",
     padding: 16,
@@ -120,14 +166,4 @@ const styles = StyleSheet.create({
   moreText: { color: "#fff", fontWeight: "bold", textAlign: "center" },
   noData: { textAlign: "center", marginTop: 40, fontSize: 16, color: "#666" },
   center: { flex: 1, justifyContent: "center", alignItems: "center" },
-  navBar: {
-    flexDirection: "row",
-    justifyContent: "space-around",
-    backgroundColor: "#fff",
-    paddingVertical: 12,
-    borderTopWidth: 1,
-    borderColor: "#ddd",
-  },
-  navBtn: { flex: 1, alignItems: "center" },
-  navText: { fontSize: 16, fontWeight: "bold", color: "#007bff" },
 });

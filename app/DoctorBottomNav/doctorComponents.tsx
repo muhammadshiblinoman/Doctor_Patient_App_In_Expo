@@ -37,7 +37,7 @@ export default function BottomNav() {
 
       {role === "doctor" && (
         <TouchableOpacity style={styles.navBtn} onPress={() => router.push("/Doctor/doctorHome")}>
-          <Text style={styles.navText}>Edit</Text>
+          <Text style={styles.navText}>Profile</Text>
         </TouchableOpacity>
       )}
     </View>
