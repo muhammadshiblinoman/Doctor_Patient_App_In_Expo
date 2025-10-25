@@ -105,7 +105,7 @@ export default function DepartmentScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#f9f9f9", padding: 16 },
+  container: { flex: 1, backgroundColor: "#f0dedeff", padding: 16 },
   header: {
     fontSize: 22,
     fontWeight: "bold",
@@ -114,15 +114,15 @@ const styles = StyleSheet.create({
     color: "#333",
   },
   searchInput: {
-    backgroundColor: "#fff",
+    backgroundColor: "#95e09fff",
     padding: 10,
     borderRadius: 8,
     marginBottom: 16,
     borderWidth: 1,
-    borderColor: "#ddd",
+    borderColor: "#e6a7a7ff",
   },
   card: {
-    backgroundColor: "#fff",
+    backgroundColor: "#e0c5c5ff",
     padding: 16,
     borderRadius: 12,
     marginBottom: 12,

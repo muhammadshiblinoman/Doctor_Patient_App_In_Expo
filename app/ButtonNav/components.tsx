@@ -24,10 +24,10 @@ const styles = StyleSheet.create({
   navBar: {
     flexDirection: "row",
     justifyContent: "space-around",
-    backgroundColor: "#fff",
+    backgroundColor: "#ffffffff",
     paddingVertical: 12,
     borderTopWidth: 1,
-    borderColor: "#ddd",
+    borderColor: "#ffffffff",
 
     // Fixed at bottom
     position: "absolute",
@@ -42,7 +42,7 @@ const styles = StyleSheet.create({
   navText: {
     fontSize: 16,
     fontWeight: "bold",
-    color: "#007bff",
+    color: "#0831e9ff",
   },
 });
 

@@ -20,18 +20,12 @@ export default function DepartmentDoctors() {
   const [doctors, setDoctors] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Get screen width dynamically
   const { width } = useWindowDimensions();
 
-  // responsive columns logic
   let numColumns = 1;
-  if (width >= 1200) {
-    numColumns = 4; // Laptop / Desktop
-  } else if (width >= 768) {
-    numColumns = 3; // Tablet
-  } else {
-    numColumns = 1; // Mobile
-  }
+  if (width >= 1200) numColumns = 4;
+  else if (width >= 768) numColumns = 3;
+  else numColumns = 1;
 
   useEffect(() => {
     const doctorsRef = ref(db, "doctors");
@@ -72,7 +66,7 @@ export default function DepartmentDoctors() {
         <FlatList
           data={doctors}
           numColumns={numColumns}
-          key={numColumns} // re-render when numColumns changes
+          key={numColumns} 
           columnWrapperStyle={
             numColumns > 1 ? { justifyContent: "space-between" } : undefined
           }
@@ -90,17 +84,37 @@ export default function DepartmentDoctors() {
               <Text style={styles.text}>{item.degree}</Text>
               <Text style={styles.text}>{item.hospital}</Text>
 
-              <TouchableOpacity
-                style={styles.moreBtn}
-                onPress={() =>
-                  router.push({
-                    pathname: "/Home/doctorDetails",
-                    params: { uid: item.uid },
-                  })
-                }
-              >
-                <Text style={styles.moreText}>More</Text>
-              </TouchableOpacity>
+              {/* Buttons Row */}
+              <View style={styles.buttonRow}>
+                <TouchableOpacity
+                  style={[styles.btn, { backgroundColor: "#007bff" }]}
+                  onPress={() =>
+                    router.push({
+                      pathname: "/Home/doctorDetails",
+                      params: { uid: item.uid },
+                    })
+                  }
+                >
+                  <Text style={styles.btnText}>More</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  style={[styles.btn, { backgroundColor: "#28a745" }]}
+                  onPress={() =>
+                    router.push({
+                      pathname: "/Booking/booking",
+                      params: {
+                        uid: item.uid,
+                        name: item.name,
+                        hospital: item.hospital,
+                        department: item.department,
+                      },
+                    })
+                  }
+                >
+                  <Text style={styles.btnText}>Booking</Text>
+                </TouchableOpacity>
+              </View>
             </View>
           )}
         />
@@ -110,7 +124,7 @@ export default function DepartmentDoctors() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#f9f9f9", padding: 16 },
+  container: { flex: 1, backgroundColor: "#e7d8d8ff", padding: 16 },
   header: {
     fontSize: 20,
     fontWeight: "bold",
@@ -119,7 +133,7 @@ const styles = StyleSheet.create({
     color: "#333",
   },
   card: {
-    backgroundColor: "#fff",
+    backgroundColor: "#b0c3c4ff",
     padding: 16,
     borderRadius: 12,
     marginBottom: 16,
@@ -128,16 +142,22 @@ const styles = StyleSheet.create({
   },
   image: { width: 70, height: 70, borderRadius: 35, marginBottom: 8 },
   iconWrapper: { marginBottom: 8 },
-  name: { fontSize: 16, fontWeight: "600", textAlign: "center" },
-  text: { fontSize: 13, color: "#555", textAlign: "center" },
-  moreBtn: {
+  name: { fontSize: 18, fontWeight: "700", textAlign: "center" },
+  text: { fontSize: 16, color: "#614b4bff", textAlign: "center" },
+  buttonRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    width: "100%",
     marginTop: 8,
-    backgroundColor: "#007bff",
-    paddingVertical: 6,
-    paddingHorizontal: 16,
-    borderRadius: 8,
+    gap: 8,
   },
-  moreText: { color: "#fff", textAlign: "center", fontWeight: "bold" },
+  btn: {
+    flex: 1,
+    paddingVertical: 6,
+    borderRadius: 8,
+    alignItems: "center",
+  },
+  btnText: { color: "#fff", fontWeight: "bold", textAlign: "center" },
   noData: { textAlign: "center", marginTop: 40, fontSize: 16, color: "#666" },
   center: { flex: 1, justifyContent: "center", alignItems: "center" },
 });
