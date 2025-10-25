@@ -168,7 +168,10 @@ export default function DoctorEdit() {
         <View key={key} style={styles.inputGroup}>
           <Text style={styles.label}>{fieldLabels[key]}</Text>
           <TextInput
-            style={[styles.input, readOnlyFields.includes(key) && styles.readOnly]}
+            style={[
+              styles.input,
+              readOnlyFields.includes(key) && styles.readOnly,
+            ]}
             value={form[key]}
             onChangeText={(val) => handleChange(key, val)}
             placeholder={`Enter ${fieldLabels[key]}`}
@@ -185,19 +188,35 @@ export default function DoctorEdit() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#f9f9f9", padding: 16 },
-  header: { fontSize: 22, fontWeight: "bold", marginBottom: 16, textAlign: "center", color: "#333" },
+  container: { flex: 1, backgroundColor: "#d3a8a8ff", padding: 16 },
+  header: {
+    fontSize: 22,
+    fontWeight: "bold",
+    marginBottom: 16,
+    textAlign: "center",
+    color: "#333",
+  },
   inputGroup: { marginBottom: 12 },
-  label: { fontSize: 14, fontWeight: "500", color: "#555", marginBottom: 6 },
+  label: { fontSize: 16, fontWeight: "600", color: "#555", marginBottom: 6 },
   input: {
-    backgroundColor: "#fff",
+    backgroundColor: "#dae2d6ff",
     padding: 12,
     borderRadius: 8,
     borderWidth: 1,
     borderColor: "#ddd",
   },
-  readOnly: { backgroundColor: "#e0e0e0" },
-  updateBtn: { marginTop: 20, backgroundColor: "#007bff", paddingVertical: 14, borderRadius: 10 },
-  updateText: { color: "#fff", textAlign: "center", fontWeight: "bold", fontSize: 16 },
+  readOnly: { backgroundColor: "#ca628aff" },
+  updateBtn: {
+    marginTop: 20,
+    backgroundColor: "#007bff",
+    paddingVertical: 14,
+    borderRadius: 10,
+  },
+  updateText: {
+    color: "#fff",
+    textAlign: "center",
+    fontWeight: "bold",
+    fontSize: 16,
+  },
   center: { flex: 1, justifyContent: "center", alignItems: "center" },
 });

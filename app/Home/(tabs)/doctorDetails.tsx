@@ -1,16 +1,14 @@
-// app/doctorDetails.tsx
 import { db } from "@/firebaseConfig";
 import { useLocalSearchParams } from "expo-router";
 import { get, ref } from "firebase/database";
 import { useEffect, useState } from "react";
-import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from "react-native";
+import { ActivityIndicator, Image, ScrollView, StyleSheet, Text, View } from "react-native";
 
 export default function DoctorDetails() {
   const { uid } = useLocalSearchParams(); // uid from navigation params
   const [doctor, setDoctor] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
-  // DOB থেকে Age calculate করার ফাংশন
   const calculateAge = (dob: string) => {
     if (!dob) return "-";
     const birthDate = new Date(dob);
@@ -66,19 +64,31 @@ export default function DoctorDetails() {
     { label: "Chamber/Place", value: doctor.place, emoji: "📍" },
     { label: "Appointment Time", value: doctor.appointmentTime, emoji: "⏰" },
     { label: "Status", value: doctor.status, emoji: "👨‍⚕️" },
-    { label: "Age", value: calculateAge(doctor.dob), emoji: "🎂" }, // Age added
+    { label: "Age", value: calculateAge(doctor.dob), emoji: "🎂" },
   ];
 
   return (
     <ScrollView style={styles.container}>
-      <Text style={styles.title}>{doctor.name}</Text>
+      {/* Doctor Avatar */}
+      <View style={styles.avatarContainer}>
+        <Image
+          source={{ uri: doctor.photoURL || "https://cdn-icons-png.flaticon.com/512/1077/1077114.png" }}
+          style={styles.avatar}
+        />
+        <Text style={styles.title}>{doctor.name}</Text>
+        <Text style={styles.subtitle}>{doctor.degree} | {doctor.department}</Text>
+        <Text style={styles.subtitle}>{doctor.hospital}</Text>
+      </View>
 
-      {infoFields.map((field, index) => (
-        <View key={index} style={styles.card}>
-          <Text style={styles.cardLabel}>{field.emoji} {field.label}</Text>
-          <Text style={styles.cardValue}>{field.value}</Text>
-        </View>
-      ))}
+      {/* Doctor Info */}
+      <View style={styles.infoContainer}>
+        {infoFields.map((field, index) => (
+          <View key={index} style={styles.card}>
+            <Text style={styles.cardLabel}>{field.emoji} {field.label}</Text>
+            <Text style={styles.cardValue}>{field.value}</Text>
+          </View>
+        ))}
+      </View>
     </ScrollView>
   );
 }
@@ -86,14 +96,13 @@ export default function DoctorDetails() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 16,
-    backgroundColor: "#f0f0f0",
+    backgroundColor: "#aafa",
   },
   center: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#f0f0f0",
+    backgroundColor: "#f8f8faff",
   },
   loadingText: {
     marginTop: 8,
@@ -101,35 +110,58 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   notFoundText: {
-    color: "#666",
+    color: "#dc3545",
     fontSize: 16,
   },
+  avatarContainer: {
+    alignItems: "center",
+    paddingVertical: 20,
+    backgroundColor: "#007bff10",
+    marginBottom: 16,
+  },
+  avatar: {
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+    marginBottom: 12,
+    borderWidth: 2,
+    borderColor: "#007bff",
+  },
   title: {
-    fontSize: 26,
+    fontSize: 24,
     fontWeight: "bold",
     color: "#007bff",
-    textAlign: "center",
-    marginBottom: 20,
+    marginBottom: 4,
+  },
+  subtitle: {
+    fontSize: 16,
+    color: "#495057",
+    marginBottom: 2,
+  },
+  infoContainer: {
+    paddingHorizontal: 16,
+    paddingBottom: 20,
   },
   card: {
-    backgroundColor: "#fff",
+    backgroundColor: "#f1e6efff",
     padding: 16,
     borderRadius: 12,
     marginBottom: 12,
     elevation: 3,
-    shadowColor: "#000",
+    shadowColor: "#f04806ff",
     shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.2,
-    shadowRadius: 1.41,
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
   },
   cardLabel: {
-    fontSize: 14,
-    color: "#555",
+    fontSize: 16,
+    color: "#3fe60cff",
     marginBottom: 4,
+    fontWeight: "600",
   },
   cardValue: {
     fontSize: 16,
-    fontWeight: "600",
-    color: "#000",
+    fontWeight: "500",
+    color: "#0a7ceeff",
   },
 });

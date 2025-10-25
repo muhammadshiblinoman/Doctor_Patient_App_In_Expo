@@ -22,11 +22,10 @@ export default function HospitalDoctors() {
 
   const { width } = useWindowDimensions();
 
-  // Responsive columns
   let numColumns = 1;
-  if (width >= 1200) numColumns = 4; // laptop/desktop
-  else if (width >= 768) numColumns = 3; // tablet
-  else numColumns = 1; // mobile
+  if (width >= 1200) numColumns = 4;
+  else if (width >= 768) numColumns = 3;
+  else numColumns = 1;
 
   useEffect(() => {
     const doctorsRef = ref(db, "doctors");
@@ -35,8 +34,12 @@ export default function HospitalDoctors() {
         const data = snapshot.val();
         const filtered = Object.values<any>(data).filter(
           (doc) =>
-            String(doc.hospital ?? "").trim().toLowerCase() ===
-            String(hospital ?? "").trim().toLowerCase()
+            String(doc.hospital ?? "")
+              .trim()
+              .toLowerCase() ===
+            String(hospital ?? "")
+              .trim()
+              .toLowerCase()
         );
         setDoctors(filtered);
       } else setDoctors([]);
@@ -64,8 +67,10 @@ export default function HospitalDoctors() {
         <FlatList
           data={doctors}
           numColumns={numColumns}
-          key={numColumns} // force re-render on column change
-          columnWrapperStyle={numColumns > 1 ? { justifyContent: "space-between" } : undefined}
+          key={numColumns}
+          columnWrapperStyle={
+            numColumns > 1 ? { justifyContent: "space-between" } : undefined
+          }
           keyExtractor={(item: any, index) => item.uid || index.toString()}
           renderItem={({ item }) => (
             <View style={[styles.card, { width: `${100 / numColumns - 2}%` }]}>
@@ -73,7 +78,11 @@ export default function HospitalDoctors() {
                 <Image source={{ uri: item.photoUrl }} style={styles.image} />
               ) : (
                 <View style={styles.iconWrapper}>
-                  <Icon name="person-circle-outline" size={70} color="#007bff" />
+                  <Icon
+                    name="person-circle-outline"
+                    size={70}
+                    color="#007bff"
+                  />
                 </View>
               )}
 
@@ -82,14 +91,37 @@ export default function HospitalDoctors() {
               <Text style={styles.text}>{item.department}</Text>
               <Text style={styles.text}>{item.hospital}</Text>
 
-              <TouchableOpacity
-                style={styles.moreBtn}
-                onPress={() =>
-                  router.push({ pathname: "/Home/doctorDetails", params: { uid: item.uid } })
-                }
-              >
-                <Text style={styles.moreText}>More</Text>
-              </TouchableOpacity>
+              {/* Buttons Row */}
+              <View style={styles.buttonRow}>
+                <TouchableOpacity
+                  style={[styles.btn, { backgroundColor: "#007bff" }]}
+                  onPress={() =>
+                    router.push({
+                      pathname: "/Home/doctorDetails",
+                      params: { uid: item.uid },
+                    })
+                  }
+                >
+                  <Text style={styles.btnText}>More</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  style={[styles.btn, { backgroundColor: "#28a745" }]}
+                  onPress={() =>
+                    router.push({
+                      pathname: "/Booking/booking",
+                      params: {
+                        uid: item.uid,
+                        name: item.name,
+                        hospital: item.hospital,
+                        department: item.department,
+                      },
+                    })
+                  }
+                >
+                  <Text style={styles.btnText}>Booking</Text>
+                </TouchableOpacity>
+              </View>
             </View>
           )}
         />
@@ -99,10 +131,16 @@ export default function HospitalDoctors() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#f9f9f9", padding: 16 },
-  header: { fontSize: 20, fontWeight: "bold", marginBottom: 16, textAlign: "center", color: "#333" },
+  container: { flex: 1, backgroundColor: "#eed4d4ff", padding: 16 },
+  header: {
+    fontSize: 20,
+    fontWeight: "bold",
+    marginBottom: 16,
+    textAlign: "center",
+    color: "#967194ff",
+  },
   card: {
-    backgroundColor: "#fff",
+    backgroundColor: "#b7a8bdff",
     padding: 16,
     borderRadius: 12,
     marginBottom: 16,
@@ -112,15 +150,21 @@ const styles = StyleSheet.create({
   image: { width: 70, height: 70, borderRadius: 35, marginBottom: 8 },
   iconWrapper: { marginBottom: 8 },
   name: { fontSize: 16, fontWeight: "600", textAlign: "center" },
-  text: { fontSize: 13, color: "#555", textAlign: "center" },
-  moreBtn: {
+  text: { fontSize: 16, color: "#555", textAlign: "center" },
+  buttonRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    width: "100%",
     marginTop: 8,
-    backgroundColor: "#007bff",
-    paddingVertical: 6,
-    paddingHorizontal: 16,
-    borderRadius: 8,
+    gap: 8,
   },
-  moreText: { color: "#fff", textAlign: "center", fontWeight: "bold" },
+  btn: {
+    flex: 1,
+    paddingVertical: 6,
+    borderRadius: 8,
+    alignItems: "center",
+  },
+  btnText: { color: "#fff", fontWeight: "bold", textAlign: "center" },
   noData: { textAlign: "center", marginTop: 40, fontSize: 16, color: "#666" },
   center: { flex: 1, justifyContent: "center", alignItems: "center" },
 });
