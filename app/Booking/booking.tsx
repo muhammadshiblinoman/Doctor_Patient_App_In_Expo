@@ -1,33 +1,44 @@
 import { db } from "@/firebaseConfig";
+import { MaterialIcons } from "@expo/vector-icons";
 import { useLocalSearchParams } from "expo-router";
-import { push, ref, set } from "firebase/database";
-import { useState } from "react";
+import { onValue, push, ref, set } from "firebase/database";
+import { useEffect, useState } from "react";
 import {
-    Alert,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
+  Alert,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from "react-native";
 
 export default function BookingScreen() {
-  const { uid, doctorName } = useLocalSearchParams(); // uid = doctorId
+  const { uid } = useLocalSearchParams(); // doctorId
+  const [doctor, setDoctor] = useState<any>(null);
+
   const [patientName, setPatientName] = useState("");
   const [phone, setPhone] = useState("");
   const [age, setAge] = useState("");
   const [reason, setReason] = useState("");
+
+  // Fetch doctor info
+  useEffect(() => {
+    if (!uid) return;
+    const doctorRef = ref(db, `doctors/${uid}`);
+    onValue(doctorRef, (snapshot) => {
+      if (snapshot.exists()) setDoctor(snapshot.val());
+    });
+  }, [uid]);
 
   const handleSubmit = async () => {
     if (!patientName || !phone || !age || !reason) {
       Alert.alert("Error", "Please fill all fields before submitting.");
       return;
     }
-
     try {
       const bookingRef = ref(db, `bookings/${uid}`);
       const newBookingRef = push(bookingRef);
-
       await set(newBookingRef, {
         patientName,
         phone,
@@ -36,7 +47,6 @@ export default function BookingScreen() {
         status: "pending",
         createdAt: new Date().toISOString(),
       });
-
       Alert.alert("Success", "Booking sent to doctor!");
       setPatientName("");
       setPhone("");
@@ -47,18 +57,27 @@ export default function BookingScreen() {
     }
   };
 
-  // Numeric input filter
   const handleNumericInput = (value: string, setter: (val: string) => void) => {
-    const numericValue = value.replace(/[^0-9]/g, ""); // non-numeric remove
-    setter(numericValue);
+    setter(value.replace(/[^0-9]/g, ""));
   };
 
   const allFilled = patientName && phone && age && reason;
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      <Text style={styles.header}>Book Appointment with Dr. {doctorName}</Text>
+      {/* Doctor Card */}
+      {doctor && (
+        <View style={styles.doctorCard}>
+          <View style={styles.docHeader}>
+            <MaterialIcons name="medical-services" size={28} color="#1a237e" />
+            <Text style={styles.docName}>Dr. {doctor.name}</Text>
+          </View>
+          <Text style={styles.docInfo}>🏥 {doctor.hospital}</Text>
+          <Text style={styles.docInfo}>🩺 {doctor.department}</Text>
+        </View>
+      )}
 
+      {/* Input Fields */}
       <TextInput
         placeholder="Patient Name"
         style={styles.input}
@@ -87,8 +106,12 @@ export default function BookingScreen() {
         onChangeText={setReason}
       />
 
+      {/* Submit Button */}
       <TouchableOpacity
-        style={[styles.button, { backgroundColor: allFilled ? "#1e88e5" : "#aaa" }]}
+        style={[
+          styles.button,
+          { backgroundColor: allFilled ? "#1e88e5" : "#aaa" },
+        ]}
         disabled={!allFilled}
         onPress={handleSubmit}
       >
@@ -99,31 +122,33 @@ export default function BookingScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    padding: 20,
-    flexGrow: 1,
-    backgroundColor: "#f1f6fa",
-  },
-  header: {
-    fontSize: 22,
-    fontWeight: "bold",
-    textAlign: "center",
+  container: { padding: 20, flexGrow: 1, backgroundColor: "#77abd6ff" },
+  doctorCard: {
+    backgroundColor: "#e6dbdbff",
+    padding: 18,
+    borderRadius: 16,
     marginBottom: 20,
+    borderWidth: 1,
+    borderColor: "#f8acacff",
+    elevation: 3,
+  },
+  docHeader: { flexDirection: "row", alignItems: "center", marginBottom: 8 },
+  docName: {
+    fontSize: 20,
+    fontWeight: "bold",
+    marginLeft: 8,
     color: "#1a237e",
   },
+  docInfo: { fontSize: 16, color: "#555", marginBottom: 4 },
   input: {
-    backgroundColor: "#fff",
+    backgroundColor: "#b8d4e0ff",
     borderRadius: 8,
     padding: 12,
     marginBottom: 10,
     borderWidth: 1,
-    borderColor: "#ddd",
+    borderColor: "#6fc1c4ff",
   },
-  button: {
-    padding: 14,
-    borderRadius: 8,
-    marginTop: 10,
-  },
+  button: { padding: 14, borderRadius: 8, marginTop: 10 },
   btnText: {
     color: "#fff",
     fontSize: 16,

@@ -1,15 +1,15 @@
 import { db } from "@/firebaseConfig";
-import { useLocalSearchParams } from "expo-router";
+import { router, useLocalSearchParams } from "expo-router";
 import { onValue, ref, remove, update } from "firebase/database";
 import { useEffect, useState } from "react";
 import {
-    ActivityIndicator,
-    Alert,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
+  ActivityIndicator,
+  Alert,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from "react-native";
 
 export default function BookingList() {
@@ -49,9 +49,19 @@ export default function BookingList() {
     try {
       const bookingRef = ref(db, `bookings/${doctorId}/${item.id}`);
       await update(bookingRef, { status: "accepted" });
+
+      // Generate a serial number if needed
+      const serialNumber = Math.floor(Math.random() * 1000 + 1);
+      await update(bookingRef, { serialNumber });
+
       Alert.alert("Success", "Booking accepted!");
+
+      // Navigate to appointment details page
+      router.push({
+        pathname: "/Doctor/appoinment",
+        params: { doctorId, bookingId: item.id },
+      });
     } catch (error: any) {
-      console.log("Accept error:", error.message);
       Alert.alert("Error", error.message);
     }
   };
@@ -69,7 +79,12 @@ export default function BookingList() {
           style: "destructive",
           onPress: async () => {
             try {
-              console.log("Deleting booking:", item.id, "for doctor:", doctorId);
+              console.log(
+                "Deleting booking:",
+                item.id,
+                "for doctor:",
+                doctorId
+              );
               const bookingRef = ref(db, `bookings/${doctorId}/${item.id}`);
               await remove(bookingRef);
               console.log("Deleted successfully");
