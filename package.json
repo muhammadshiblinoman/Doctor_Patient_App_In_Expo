@@ -38,6 +38,8 @@
     "expo-system-ui": "~5.0.9",
     "expo-web-browser": "~14.2.0",
     "firebase": "^11.10.0",
+    "firebase-admin": "^13.5.0",
+    "firebase-functions": "^6.6.0",
     "firebase-tools": "^14.9.0",
     "nativewind": "^4.1.23",
     "react": "19.0.0",
@@ -51,7 +53,8 @@
     "react-native-vector-icons": "^10.3.0",
     "react-native-web": "~0.20.0",
     "react-native-webview": "13.13.5",
-    "tailwindcss": "^3.4.17"
+    "tailwindcss": "^3.4.17",
+    "twilio": "^5.10.3"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",

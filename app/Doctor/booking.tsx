@@ -1,22 +1,28 @@
 import { db } from "@/firebaseConfig";
 import { useLocalSearchParams } from "expo-router";
-import { onValue, ref } from "firebase/database";
+import { onValue, ref, remove, update } from "firebase/database";
 import { useEffect, useState } from "react";
 import {
     ActivityIndicator,
+    Alert,
     ScrollView,
     StyleSheet,
     Text,
+    TouchableOpacity,
     View,
 } from "react-native";
 
 export default function BookingList() {
-  const { doctorId } = useLocalSearchParams();
+  const { doctorId } = useLocalSearchParams(); // doctorId must come from navigation
   const [bookings, setBookings] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!doctorId) return;
+    if (!doctorId) {
+      console.log("No doctorId provided!");
+      setLoading(false);
+      return;
+    }
 
     const bookingRef = ref(db, `bookings/${doctorId}`);
     const unsubscribe = onValue(bookingRef, (snapshot) => {
@@ -24,10 +30,10 @@ export default function BookingList() {
         const data = snapshot.val();
         const list = Object.keys(data)
           .map((key) => ({ id: key, ...data[key] }))
-          // 🔹 নতুন বুকিংগুলো আগে দেখানোর জন্য sort
-          .sort((a, b) => {
-            return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
-          });
+          .sort(
+            (a, b) =>
+              new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+          );
         setBookings(list);
       } else {
         setBookings([]);
@@ -37,6 +43,47 @@ export default function BookingList() {
 
     return () => unsubscribe();
   }, [doctorId]);
+
+  const handleAccept = async (item: any) => {
+    if (!doctorId || !item.id) return;
+    try {
+      const bookingRef = ref(db, `bookings/${doctorId}/${item.id}`);
+      await update(bookingRef, { status: "accepted" });
+      Alert.alert("Success", "Booking accepted!");
+    } catch (error: any) {
+      console.log("Accept error:", error.message);
+      Alert.alert("Error", error.message);
+    }
+  };
+
+  const handleDelete = (item: any) => {
+    if (!doctorId || !item.id) return;
+
+    Alert.alert(
+      "Confirm Delete",
+      "Are you sure you want to delete this booking?",
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Delete",
+          style: "destructive",
+          onPress: async () => {
+            try {
+              console.log("Deleting booking:", item.id, "for doctor:", doctorId);
+              const bookingRef = ref(db, `bookings/${doctorId}/${item.id}`);
+              await remove(bookingRef);
+              console.log("Deleted successfully");
+              Alert.alert("Deleted", "Booking has been removed.");
+              // UI automatically update hobe onValue listener diye
+            } catch (error: any) {
+              console.log("Delete error:", error.message);
+              Alert.alert("Error", error.message);
+            }
+          },
+        },
+      ]
+    );
+  };
 
   if (loading) {
     return (
@@ -59,19 +106,37 @@ export default function BookingList() {
         bookings.map((item) => (
           <View key={item.id} style={styles.card}>
             <Text style={styles.label}>Patient Name:</Text>
-            <Text style={styles.value}>{item.name}</Text>
+            <Text style={styles.value}>{item.patientName}</Text>
 
             <Text style={styles.label}>Phone:</Text>
             <Text style={styles.value}>{item.phone}</Text>
 
-            <Text style={styles.label}>Date:</Text>
-            <Text style={styles.value}>{item.date}</Text>
-
-            {item.message && (
+            {item.reason && (
               <>
-                <Text style={styles.label}>Message:</Text>
-                <Text style={styles.value}>{item.message}</Text>
+                <Text style={styles.label}>Reason:</Text>
+                <Text style={styles.value}>{item.reason}</Text>
               </>
+            )}
+
+            <View style={styles.buttonContainer}>
+              {item.status !== "accepted" && (
+                <TouchableOpacity
+                  style={[styles.actionButton, { backgroundColor: "green" }]}
+                  onPress={() => handleAccept(item)}
+                >
+                  <Text style={styles.btnText}>Accept</Text>
+                </TouchableOpacity>
+              )}
+              <TouchableOpacity
+                style={[styles.actionButton, { backgroundColor: "red" }]}
+                onPress={() => handleDelete(item)}
+              >
+                <Text style={styles.btnText}>Delete</Text>
+              </TouchableOpacity>
+            </View>
+
+            {item.status === "accepted" && (
+              <Text style={styles.acceptedText}>Accepted</Text>
             )}
           </View>
         ))
@@ -86,6 +151,11 @@ const styles = StyleSheet.create({
     backgroundColor: "#e8f0fe",
     flexGrow: 1,
   },
+  center: {
+    justifyContent: "center",
+    alignItems: "center",
+    flex: 1,
+  },
   header: {
     fontSize: 24,
     fontWeight: "bold",
@@ -98,6 +168,10 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     padding: 16,
     marginBottom: 12,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
     elevation: 3,
   },
   label: {
@@ -114,10 +188,26 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: "#777",
   },
-  center: {
+  buttonContainer: {
+    flexDirection: "row",
+    marginTop: 10,
+    justifyContent: "space-between",
+  },
+  actionButton: {
     flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-    marginTop: 50,
+    padding: 10,
+    borderRadius: 6,
+    marginHorizontal: 5,
+  },
+  btnText: {
+    color: "#fff",
+    textAlign: "center",
+    fontWeight: "bold",
+  },
+  acceptedText: {
+    fontWeight: "bold",
+    color: "green",
+    marginTop: 5,
+    fontSize: 16,
   },
 });
