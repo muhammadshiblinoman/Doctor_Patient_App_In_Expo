@@ -1,4 +1,4 @@
-import { db } from "@/firebaseConfig";
+import { auth, db } from "@/firebaseConfig";
 import { MaterialIcons } from "@expo/vector-icons";
 import { useLocalSearchParams } from "expo-router";
 import { onValue, push, ref, set } from "firebase/database";
@@ -20,6 +20,7 @@ export default function BookingScreen() {
   const [patientName, setPatientName] = useState("");
   const [phone, setPhone] = useState("");
   const [age, setAge] = useState("");
+  const [email, setEmail] = useState("");
   const [reason, setReason] = useState("");
 
   // Fetch doctor info
@@ -32,7 +33,9 @@ export default function BookingScreen() {
   }, [uid]);
 
   const handleSubmit = async () => {
-    if (!patientName || !phone || !age || !reason) {
+    const emailToUse = email.trim() || auth.currentUser?.email || "";
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!patientName || !phone || !age || !reason || !emailToUse || !emailRegex.test(emailToUse)) {
       Alert.alert("Error", "Please fill all fields before submitting.");
       return;
     }
@@ -44,13 +47,15 @@ export default function BookingScreen() {
         phone,
         age,
         reason,
+        email: emailToUse,
+        doctorName: doctor?.name ?? "",
         status: "pending",
-        createdAt: new Date().toISOString(),
       });
       Alert.alert("Success", "Booking sent to doctor!");
       setPatientName("");
       setPhone("");
       setAge("");
+      setEmail("");
       setReason("");
     } catch (error: any) {
       Alert.alert("Error", error.message);
@@ -61,7 +66,7 @@ export default function BookingScreen() {
     setter(value.replace(/[^0-9]/g, ""));
   };
 
-  const allFilled = patientName && phone && age && reason;
+  const allFilled = patientName && phone && age && reason && (email.trim() || auth.currentUser?.email);
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
@@ -83,6 +88,14 @@ export default function BookingScreen() {
         style={styles.input}
         value={patientName}
         onChangeText={setPatientName}
+      />
+      <TextInput
+        placeholder="Patient Email"
+        style={styles.input}
+        keyboardType="email-address"
+        autoCapitalize="none"
+        value={email}
+        onChangeText={setEmail}
       />
       <TextInput
         placeholder="Phone Number"

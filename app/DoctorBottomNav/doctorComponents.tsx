@@ -48,10 +48,10 @@ const styles = StyleSheet.create({
   navBar: {
     flexDirection: "row",
     justifyContent: "space-around",
-    backgroundColor: "#ec8b8bff",
+    backgroundColor: "#fffefeff",
     paddingVertical: 12,
     borderTopWidth: 1,
-    borderColor: "#ddd",
+    borderColor: "#fdfcfcff",
     position: "absolute",
     bottom: 0,
     width: "100%",

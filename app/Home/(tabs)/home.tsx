@@ -1,4 +1,6 @@
+import { theme } from "@/constants/theme";
 import { db } from "@/firebaseConfig";
+import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import { onValue, ref } from "firebase/database";
 import { useEffect, useState } from "react";
@@ -80,7 +82,7 @@ export default function HomeScreen() {
           placeholder="Search by name"
           value={search}
           onChangeText={setSearch}
-          placeholderTextColor="#777"
+          placeholderTextColor={theme.colors.muted}
         />
       </View>
 
@@ -115,7 +117,7 @@ export default function HomeScreen() {
                   style={[styles.btn, { backgroundColor: "#007bff" }]}
                   onPress={() =>
                     router.push({
-                      pathname: "/Home/doctorDetails",
+                      pathname: "/Home/(tabs)/doctorDetails",
                       params: { uid: item.uid },
                     })
                   }
@@ -124,7 +126,7 @@ export default function HomeScreen() {
                 </TouchableOpacity>
 
                 <TouchableOpacity
-                  style={[styles.btn, { backgroundColor: "#28a745" }]}
+                  style={[styles.btn, { backgroundColor: theme.colors.secondary }]}
                   onPress={() =>
                     router.push({
                       pathname: "/Booking/booking",
@@ -144,58 +146,117 @@ export default function HomeScreen() {
           )}
         />
       )}
+
+      {/* Floating AI Chat Button - Enhanced */}
+      <TouchableOpacity
+        style={styles.aiChatButton}
+        onPress={() => router.push("/Home/(tabs)/aiChat")}
+        activeOpacity={0.8}
+      >
+        <View style={styles.aiChatIconContainer}>
+          <Ionicons name="chatbubbles" size={26} color="#fff" />
+          <View style={styles.aiChatBadge}>
+            <Ionicons name="sparkles" size={10} color="#FFD700" />
+          </View>
+        </View>
+        <Text style={styles.aiChatLabel}>AI Help</Text>
+      </TouchableOpacity>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#e0e0e0" },
+  container: { flex: 1, backgroundColor: theme.colors.background, paddingBottom: 70 },
   center: { flex: 1, justifyContent: "center", alignItems: "center" },
   headerSection: {
-    backgroundColor: "#ff00aaff",
-    paddingVertical: 16,
-    borderBottomLeftRadius: 20,
-    borderBottomRightRadius: 20,
+    backgroundColor: theme.colors.primary,
+    paddingVertical: theme.spacing.lg,
+    borderBottomLeftRadius: theme.radius.lg,
+    borderBottomRightRadius: theme.radius.lg,
     alignItems: "center",
-    elevation: 5,
+    ...theme.shadow,
   },
-  headerText: { fontSize: 24, fontWeight: "bold", color: "#fff" },
-  searchContainer: { paddingHorizontal: 16, paddingTop: 16, paddingBottom: 8 },
+  headerText: { fontSize: 22, fontWeight: "700", color: theme.colors.surface },
+  searchContainer: { paddingHorizontal: theme.spacing.lg, paddingTop: theme.spacing.lg, paddingBottom: theme.spacing.sm },
   searchBar: {
-    backgroundColor: "#22b9ff36",
-    borderRadius: 10,
-    padding: 10,
+    backgroundColor: theme.colors.surface,
+    borderRadius: theme.radius.md,
+    padding: theme.spacing.sm,
     fontSize: 16,
     borderWidth: 1,
-    borderColor: "#ddddddff",
+    borderColor: theme.colors.border,
   },
-  listContainer: { paddingHorizontal: 16, paddingBottom: 20 },
+  listContainer: { paddingHorizontal: theme.spacing.lg, paddingBottom: theme.spacing.lg },
   card: {
-    backgroundColor: "#e6f2ff",
-    marginBottom: 16,
-    padding: 16,
-    borderRadius: 12,
+    backgroundColor: theme.colors.surface,
+    marginBottom: theme.spacing.lg,
+    padding: theme.spacing.lg,
+    borderRadius: theme.radius.md,
     alignItems: "center",
-    shadowColor: "#000000ff",
-    shadowOpacity: 0.15,
-    shadowOffset: { width: 0, height: 2 },
-    shadowRadius: 6,
-    elevation: 4,
+    ...theme.shadow,
     borderWidth: 1,
-    borderColor: "#cce0ff",
+    borderColor: theme.colors.border,
   },
-  logo: { width: 80, height: 80, borderRadius: 40, marginBottom: 12 },
+  logo: { width: 80, height: 80, borderRadius: 40, marginBottom: theme.spacing.sm },
   info: { alignItems: "center" },
-  name: { fontSize: 16, fontWeight: "bold", marginBottom: 4, color: "#004080" },
-  text: { fontSize: 14, color: "#333", marginBottom: 2 },
+  name: { fontSize: 16, fontWeight: "700", marginBottom: 4, color: theme.colors.text },
+  text: { fontSize: 14, color: theme.colors.textSecondary, marginBottom: 2 },
   buttonRow: {
     flexDirection: "row",
     justifyContent: "space-between",
     width: "100%",
-    marginTop: 10,
-    gap: 8,
+    marginTop: theme.spacing.sm,
+    gap: theme.spacing.sm,
   },
-  btn: { flex: 1, paddingVertical: 8, borderRadius: 8, alignItems: "center" },
-  btnText: { color: "#fff", fontWeight: "bold", fontSize: 14 },
-  noData: { textAlign: "center", marginTop: 40, fontSize: 16, color: "#666" },
+  btn: { flex: 1, paddingVertical: 8, borderRadius: theme.radius.sm, alignItems: "center" },
+  btnText: { color: theme.colors.surface, fontWeight: "700", fontSize: 14 },
+  noData: { textAlign: "center", marginTop: 40, fontSize: 16, color: theme.colors.muted },
+
+  // Enhanced AI Chat Button Styles
+  aiChatButton: {
+    position: "absolute",
+    right: 20,
+    bottom: 90,
+    backgroundColor: "#007AFF",
+    borderRadius: 28,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+    shadowColor: "#007AFF",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 8,
+    borderWidth: 2,
+    borderColor: "rgba(255, 255, 255, 0.2)",
+  },
+  aiChatIconContainer: {
+    position: "relative",
+    width: 32,
+    height: 32,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  aiChatBadge: {
+    position: "absolute",
+    top: -4,
+    right: -4,
+    width: 18,
+    height: 18,
+    borderRadius: 9,
+    backgroundColor: "#FF3B30",
+    justifyContent: "center",
+    alignItems: "center",
+    borderWidth: 2,
+    borderColor: "#fff",
+  },
+  aiChatLabel: {
+    color: "#fff",
+    fontSize: 14,
+    fontWeight: "700",
+    letterSpacing: 0.5,
+  },
 });
